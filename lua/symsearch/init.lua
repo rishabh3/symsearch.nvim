@@ -36,13 +36,11 @@ local function show_class_symbols()
     local telescope_data = {}
     for _, class in ipairs(data) do
         local parsed_data = {
-            name = class.name.name,
+            name = "📦" .. " " .. class.name.name,
             loc = class.name.loc
         }
         table.insert(telescope_data, parsed_data)
     end
-
-    utils.print_debug(telescope_data)
 
     return utils.create_picker(require("telescope.themes").get_cursor(), "Available Class", telescope_data)
 end
@@ -67,7 +65,6 @@ local function show_field_symbols()
         table.insert(telescope_data, parsed_data)
     end
 
-    utils.print_debug(telescope_data)
     return utils.create_picker(require("telescope.themes").get_cursor(), "Available Fields", telescope_data)
 end
 
