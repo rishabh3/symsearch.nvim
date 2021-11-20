@@ -1,5 +1,4 @@
 local config = require("symsearch.config")
-local q = require("vim.treesitter.query")
 local tsutils = require("nvim-treesitter.ts_utils")
 local pickers = require "telescope.pickers"
 local finders = require "telescope.finders"
@@ -9,10 +8,6 @@ local action_state = require "telescope.actions.state"
 
 
 local M = {}
-
-local function print_debug(a)
-    print(vim.inspect(a))
-end
 
 local function load_parser()
     local bufnr = 0
@@ -187,7 +182,6 @@ local function create_picker(opts, title, data)
     }):find()
 end
 
-M.print_debug = print_debug
 M.load_parser = load_parser
 M.load_root = load_root
 M.load_query_table = load_query_table
