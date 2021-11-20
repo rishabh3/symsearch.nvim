@@ -44,8 +44,7 @@ local function load_query_table()
     local available_query = load_queries()
 
     if available_query == nil then
-        print("Please open supported file")
-        return nil
+        error("Please open supported file, check your config for supported file, default support is for java")
     end
 
     local available_qprops = load_available_qprops()
