@@ -17,7 +17,7 @@ local opts = {
                 title = "Available Classes",
                 ts_data_creator = function (data)
                     local telescope_data = {}
-                    for _, class in ipairs(data) do
+                    for _, class in pairs(data) do
                         local parsed_data = {
                             name = "📦" .. " " .. class.name.name,
                             loc = class.name.loc
@@ -37,9 +37,13 @@ local opts = {
                 title = "Available Methods",
                 ts_data_creator = function (data)
                     local telescope_data = {}
-                    for _, method in ipairs(data) do
+                    for _, method in pairs(data) do
+                        local temp_name = "🔎 "
+                        if method.access ~= nil then
+                            temp_name = temp_name .. method.access.name .. " "
+                        end
                         local parsed_data = {
-                            name = method.access.name .. " " .. method.name.name .. method.params.name .. ": " .. method.type.name,
+                            name = temp_name .. method.name.name .. method.params.name .. ": " .. method.type.name,
                             loc = method.name.loc
                         }
                         table.insert(telescope_data, parsed_data)
@@ -52,9 +56,13 @@ local opts = {
                 title = "Available Fields",
                 ts_data_creator = function (data)
                     local telescope_data = {}
-                    for _, field in ipairs(data) do
+                    for _, field in pairs(data) do
+                        local temp_name = "🔎 "
+                        if field.access ~= nil then
+                            temp_name = temp_name .. field.access.name .. " "
+                        end
                         local parsed_data = {
-                            name = field.access.name .. " " .. field.name.name .. ": " .. field.type.name,
+                            name = temp_name .. field.name.name .. ": " .. field.type.name,
                             loc = field.name.loc
                         }
                         table.insert(telescope_data, parsed_data)
@@ -67,15 +75,22 @@ local opts = {
     query = {
         java = {
             class = [[
-                (
-                    class_declaration
-                        name: (identifier) @name (#offset! @name)
-                )
+                [
+                    (
+                        class_declaration
+                            name: (identifier) @name (#offset! @name)
+                    )
+                    (
+                        interface_declaration 
+                            name: (identifier) @name (#offset! @name)
+                    )
+
+                ]
             ]],
             methods = [[
                 (
                     method_declaration
-                        (modifiers) @access
+                        (modifiers)* @access
                         type: [
                             (void_type)
                             (type_identifier)
@@ -91,7 +106,7 @@ local opts = {
             fields = [[
                 (
                     field_declaration
-                        (modifiers) @access
+                        (modifiers)* @access
                         type: [
                             (type_identifier)
                             (generic_type)

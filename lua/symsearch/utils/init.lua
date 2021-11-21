@@ -7,13 +7,14 @@ local actions = require "telescope.actions"
 local action_state = require "telescope.actions.state"
 
 
-local M = {
-    config = config
-}
+local M = {}
 
 local function setup_helper(new_config)
-    new_config = new_config or {}
-    M.config = vim.tbl_deep_extend("force", config, new_config)
+    if new_config == nil then
+        M.config = config
+    else
+        M.config.opts = new_config
+    end
 end
 
 local function load_parser()
@@ -61,7 +62,7 @@ local function load_query_table()
 
     local query_table = {}
 
-    for _, value in ipairs(available_qprops) do
+    for _, value in pairs(available_qprops) do
         local query = available_query[value]
         if query ~= nil then
             query_table[value] = vim.treesitter.parse_query(vim.bo.filetype, query)
@@ -91,7 +92,7 @@ end
 local function clean_name(names, capture_name)
     local new_name = ""
     if capture_name ~= "access" then
-        for index, name in ipairs(names) do
+        for index, name in pairs(names) do
             if index > 1 then
                 name = substitute(trim(name))
             end
@@ -110,7 +111,7 @@ end
 local function collect_data(nodes, capture_metadata, metadata)
     local collected_data = {}
     if nodes ~= nil then
-        for index, node in ipairs(nodes) do
+        for index, node in pairs(nodes) do
             local unprocessed_name = tsutils.get_node_text(node, 0)
             local processed_name = clean_name(unprocessed_name, capture_metadata[index].capture_name)
             local data = {
@@ -122,10 +123,10 @@ local function collect_data(nodes, capture_metadata, metadata)
 
         local capture_no_metadata = 0
 
-        for index, x in ipairs(capture_metadata) do
+        for index, x in pairs(capture_metadata) do
             if x.metadata then
                 local location = metadata.content[index - capture_no_metadata]
-                collected_data[x.capture_name].loc = {location[1] + 1, location[2]} -- lua is 1 index whereas C is 0 index (treesitter returns 0 based)
+                collected_data[x.capture_name].loc = {location[1] + 1, location[2] + 1} -- lua is 1 index whereas C is 0 index (treesitter returns 0 based)
             else
                 capture_no_metadata = capture_no_metadata + 1
             end
@@ -138,7 +139,7 @@ end
 local function preprocess_captures(captures, patterns)
     local metadata = {}
     if captures ~= nil then
-        for _, capture in ipairs(captures) do
+        for _, capture in pairs(captures) do
             local data = {
                 capture_name = capture,
                 metadata = false
@@ -147,11 +148,12 @@ local function preprocess_captures(captures, patterns)
         end
     end
     if patterns ~= nil then
-        for _, pattern in ipairs(patterns) do
+        for _, pattern in pairs(patterns) do
             local index = pattern[2]
             metadata[index].metadata = true
         end
     end
+
     return metadata
 end
 
