@@ -13,7 +13,9 @@ local function setup_helper(new_config)
     if new_config == nil then
         M.config = config
     else
-        M.config.opts = new_config
+        M.config = {
+            opts = new_config
+        }
     end
 end
 
