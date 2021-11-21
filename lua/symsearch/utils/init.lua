@@ -11,10 +11,6 @@ local M = {
     config = config
 }
 
-M.print_debug = function (a)
-    print(vim.inspect(a))
-end
-
 local function setup_helper(new_config)
     new_config = new_config or {}
     M.config = vim.tbl_deep_extend("force", config, new_config)
