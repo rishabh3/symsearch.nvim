@@ -15,6 +15,7 @@ quick symbol finder they one we have in ides like `Eclipse`. The default configu
 as that is the primary language I use from dev work, but it can be extended by configuring more into it.
 
 ![Preview](https://i.imgur.com/VRq4i1E.gif)
+![Imgur](https://i.imgur.com/P6g6B2s.mp4)
 
 ## Symsearch Table of contents
 
