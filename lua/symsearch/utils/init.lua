@@ -7,7 +7,18 @@ local actions = require "telescope.actions"
 local action_state = require "telescope.actions.state"
 
 
-local M = {}
+local M = {
+    config = config
+}
+
+M.print_debug = function (a)
+    print(vim.inspect(a))
+end
+
+local function setup_helper(new_config)
+    new_config = new_config or {}
+    M.config = vim.tbl_deep_extend("force", config, new_config)
+end
 
 local function load_parser()
     local bufnr = 0
@@ -27,17 +38,20 @@ local function load_root(parser)
 end
 
 local function load_queries()
+    if M.config == nil then
+        error("Please invoke setup method in your neovim configuration")
+    end
     if vim.bo.filetype == "" then
         return nil
     end
-    return config.opts.query[vim.bo.filetype]
+    return M.config.opts.query[vim.bo.filetype]
 end
 
 local function load_available_qprops()
     if vim.bo.filetype == "" then
         return nil
     end
-    return config.opts.qprops[vim.bo.filetype]
+    return M.config.opts.qprops[vim.bo.filetype]
 end
 
 local function load_query_table()
@@ -62,15 +76,19 @@ local function load_query_table()
 end
 
 local function trim(s)
-   return (s:gsub("^%s*(.-)%s*$", "%1"))
+    if s == nil then
+        return "Null string"
+    end
+    return (s:gsub("^%s*(.-)%s*$", "%1"))
 end
 
 local function substitute(name)
-    for key, value in pairs(config.opts.symbols) do
+    for key, value in pairs(M.config.opts.symbols) do
         if string.find(name, key) then
             return value
         end
     end
+    return name
 end
 
 
@@ -79,7 +97,7 @@ local function clean_name(names, capture_name)
     if capture_name ~= "access" then
         for index, name in ipairs(names) do
             if index > 1 then
-                name = trim(name)
+                name = substitute(trim(name))
             end
             new_name = new_name .. name
         end
@@ -142,6 +160,9 @@ local function preprocess_captures(captures, patterns)
 end
 
 local function matched_data(query, root)
+    if M.config == nil then
+        error("Please invoke setup method in your neovim configuration")
+    end
     local data = {}
     for _, nodes, metadata in query:iter_matches(root, 0) do
         local capture_metadata = preprocess_captures(query.captures, query.info.patterns[1])
@@ -173,8 +194,10 @@ local function create_picker(opts, title, data)
             actions.select_default:replace(function()
                 actions.close(prompt_bufnr)
                 local selection = action_state.get_selected_entry()
-                local line_detail = selection.value.loc
-                vim.api.nvim_win_set_cursor(0, line_detail)
+                if selection ~= nil then
+                    local line_detail = selection.value.loc
+                    vim.api.nvim_win_set_cursor(0, line_detail)
+                end
             end)
             return true
         end
@@ -186,5 +209,6 @@ M.load_root = load_root
 M.load_query_table = load_query_table
 M.matched_data = matched_data
 M.create_picker = create_picker
+M.setup_helper = setup_helper
 
 return M

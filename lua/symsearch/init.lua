@@ -4,6 +4,7 @@ local M = {}
 local function init()
     M.parser = utils.load_parser()
     M.qtable = utils.load_query_table()
+    M.current_file_type = vim.bo.filetype
 end
 
 local function load_symbols()
@@ -19,83 +20,53 @@ local function load_symbols()
         prepared_data[key] = data
     end
 
-    M.symbols = prepared_data
+    M.symbols = {
+        prepared_data = prepared_data,
+        buffer = vim.api.nvim_get_current_buf()
+    }
 end
 
-local function show_class_symbols()
+local function show_symbols(type)
     if M.symbols == nil then
         M.reload_symbols()
     end
-    local symbol_key = "class"
-    local data = M.symbols[symbol_key]
 
-    if data == nil then
-        error("No class symbol support added, check your configuration");
+    local current_picker_config = nil
+
+    if type == "class" then
+        current_picker_config = utils.config.opts.picker_config[vim.bo.filetype].class_picker_config
+    elseif type == "methods" then
+        current_picker_config = utils.config.opts.picker_config[vim.bo.filetype].method_picker_config
+    elseif type == "fields" then
+        current_picker_config = utils.config.opts.picker_config[vim.bo.filetype].field_picker_config
     end
 
-    local telescope_data = {}
-    for _, class in ipairs(data) do
-        local parsed_data = {
-            name = "📦" .. " " .. class.name.name,
-            loc = class.name.loc
-        }
-        table.insert(telescope_data, parsed_data)
+    if current_picker_config == nil then
+        error("No support added for " .. vim.bo.filetype .. " filetype, please check your configuration")
     end
 
-    return utils.create_picker(require("telescope.themes").get_cursor(), "Available Class", telescope_data)
+    local data = M.symbols.prepared_data[type]
+
+    local telescope_data = current_picker_config.ts_data_creator(data)
+
+    return utils.create_picker(current_picker_config.picker_opts, current_picker_config.title, telescope_data)
 end
 
-local function show_field_symbols()
-    if M.symbols == nil then
-        M.reload_symbols()
-    end
-    local symbol_key = "fields"
-    local data = M.symbols[symbol_key]
-
-    if data == nil then
-        error("No field symbol support added, check your configuration");
-    end
-
-    local telescope_data = {}
-    for _, field in ipairs(data) do
-        local parsed_data = {
-            name = field.access.name .. " " .. field.name.name .. ": " .. field.type.name,
-            loc = field.name.loc
-        }
-        table.insert(telescope_data, parsed_data)
-    end
-
-    return utils.create_picker(require("telescope.themes").get_cursor(), "Available Fields", telescope_data)
+local function setup(config)
+    return utils.setup_helper(config)
 end
 
-local function show_method_symbols()
-    if M.symbols == nil then
-        M.reload_symbols()
-    end
-    local symbol_key = "methods"
-    local data = M.symbols[symbol_key]
-
-    if data == nil then
-        error("No method symbol support added, check your configuration");
-    end
-
-
-    local telescope_data = {}
-    for _, method in ipairs(data) do
-        local parsed_data = {
-            name = method.access.name .. " " .. method.name.name .. method.params.name .. ": " .. method.type.name,
-            loc = method.name.loc
-        }
-        table.insert(telescope_data, parsed_data)
-    end
-
-    return utils.create_picker(require("telescope.themes").get_ivy(), "Available Methods", telescope_data)
+local function cleanup()
+    M.symbols = nil
+    M.parser = nil
+    M.qtable = nil
+    M.pickers = nil
 end
 
 
 M.reload_symbols = load_symbols
-M.show_class_symbols = show_class_symbols
-M.show_field_symbols = show_field_symbols
-M.show_method_symbols = show_method_symbols
+M.show_symbols = show_symbols
+M.cleanup = cleanup
+M.setup = setup
 
 return M
