@@ -119,8 +119,12 @@ local opts = {
                 ts_data_creator = function (data)
                     local telescope_data = {}
                     for _, method in pairs(data) do
+                        local temp_name = "🔎 "
+                        if method.access ~= nil then
+                            temp_name = temp_name .. method.access.name .. " "
+                        end
                         local parsed_data = {
-                            name = method.access.name .. " " .. method.name.name .. method.params.name .. ": " .. method.type.name,
+                            name = temp_name .. method.name.name .. method.params.name .. ": " .. method.type.name,
                             loc = method.name.loc
                         }
                         table.insert(telescope_data, parsed_data)
@@ -134,8 +138,12 @@ local opts = {
                 ts_data_creator = function (data)
                     local telescope_data = {}
                     for _, field in pairs(data) do
+                        local temp_name = "🔎 "
+                        if field.access ~= nil then
+                            temp_name = temp_name .. field.access.name .. " "
+                        end
                         local parsed_data = {
-                            name = field.access.name .. " " .. field.name.name .. ": " .. field.type.name,
+                            name = temp_name .. field.name.name .. ": " .. field.type.name,
                             loc = field.name.loc
                         }
                         table.insert(telescope_data, parsed_data)
@@ -148,10 +156,17 @@ local opts = {
     query = {
         java = {
             class = [[
-                (
-                    class_declaration
-                        name: (identifier) @name (#offset! @name)
-                )
+                [
+                    (
+                        class_declaration
+                            name: (identifier) @name (#offset! @name)
+                    )
+                    (
+                        interface_declaration 
+                            name: (identifier) @name (#offset! @name)
+                    )
+
+                ]
             ]],
             methods = [[
                 (
