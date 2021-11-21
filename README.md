@@ -14,7 +14,7 @@ categorises them are `class`, `fields` and `methods`. This is my first `neovim p
 quick symbol finder they one we have in ides like `Eclipse`. The default configuration is for `java`
 as that is the primary language I use from dev work, but it can be extended by configuring more into it.
 
-![Preview](https://imgur.com/gallery/8D5TmSG)
+![Preview](https://imgur.com/VRq4i1E)
 
 ## Symsearch Table of contents
 
