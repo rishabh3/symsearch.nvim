@@ -4,7 +4,6 @@ local M = {}
 local function init()
     M.parser = utils.load_parser()
     M.qtable = utils.load_query_table()
-    M.current_file_type = vim.bo.filetype
 end
 
 local function load_symbols()
@@ -20,10 +19,7 @@ local function load_symbols()
         prepared_data[key] = data
     end
 
-    M.symbols = {
-        prepared_data = prepared_data,
-        buffer = vim.api.nvim_get_current_buf()
-    }
+    M.symbols = prepared_data
 end
 
 local function show_symbols(type)
@@ -45,7 +41,7 @@ local function show_symbols(type)
         error("No support added for " .. vim.bo.filetype .. " filetype, please check your configuration")
     end
 
-    local data = M.symbols.prepared_data[type]
+    local data = M.symbols[type]
 
     local telescope_data = current_picker_config.ts_data_creator(data)
 
@@ -60,7 +56,6 @@ local function cleanup()
     M.symbols = nil
     M.parser = nil
     M.qtable = nil
-    M.pickers = nil
 end
 
 
